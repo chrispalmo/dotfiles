@@ -33,4 +33,5 @@ Keys prefixed with `cursor.` (and other Cursor-specific options) belong in `sett
 |----------|---------|
 | [`../rules/`](../rules/) | User Rules markdown (paste into Cursor Settings → Rules) |
 | [`../commands/`](../commands/) | User slash commands (`~/.cursor/commands/`) |
+| [skills](https://github.com/chrispalmo/skills) | Global Cursor skills (`~/dev/skills` → `~/.cursor/skills/`), cloned by `install.sh` |
 | [agent-chats](https://github.com/chrispalmo/agent-chats) | Global hooks (`~/.cursor/hooks.json`), not in dotfiles |

@@ -65,7 +65,7 @@ _⚠️ if Moom is installed, quit it before running. Import is skipped when Moo
 ~/.files/install.sh
 ```
 
-`install.sh` is idempotent. Symlinks dotfiles, imports Moom (when installed), bootstraps vim plugins, creates `.keys`/`.scratch`, sets screenshot folder.
+`install.sh` is idempotent. Symlinks dotfiles, imports Moom (when installed), bootstraps vim plugins, creates `.keys`/`.scratch`, sets screenshot folder, and clones [skills](https://github.com/chrispalmo/skills) into `~/dev/skills` then runs its installer (links into `~/.cursor/skills/`).
 
 ## after install
 
@@ -83,5 +83,6 @@ Symlinked by `install.sh`:
 - `.config/cursor/User/keybindings.json` → `~/Library/Application Support/Cursor/User/keybindings.json`
 - `.config/cursor/commands/` → `~/.cursor/commands/`
 
+Skills: [skills](https://github.com/chrispalmo/skills) at `~/dev/skills` — cloned and installed by `install.sh`.
 User rules: markdown in `.config/cursor/rules/` — paste into Cursor manually.
 Hooks: [agent-chats](https://github.com/chrispalmo/agent-chats) repo, not dotfiles.

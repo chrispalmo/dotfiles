@@ -94,4 +94,23 @@ SCREENSHOT_PATH="$HOME/Desktop/screenshots"
 defaults write com.apple.screencapture location "$SCREENSHOT_PATH"
 killall SystemUIServer 2>/dev/null || true
 
+# Cursor skills (separate repo → ~/.cursor/skills/)
+DEV_ROOT="${DEV_ROOT:-$HOME/dev}"
+SKILLS_REPO="$DEV_ROOT/skills"
+if [ ! -d "$SKILLS_REPO/.git" ]; then
+  if [ -e "$SKILLS_REPO" ]; then
+    echo "Note: $SKILLS_REPO exists but is not a git repo; skip clone." >&2
+  else
+    mkdir -p "$DEV_ROOT"
+    git clone git@github.com:chrispalmo/skills.git "$SKILLS_REPO" || \
+      echo "Note: skills clone failed (SSH access to chrispalmo/skills?)." >&2
+  fi
+fi
+if [ -x "$SKILLS_REPO/scripts/install.sh" ]; then
+  "$SKILLS_REPO/scripts/install.sh" || \
+    echo "Note: skills install failed; run $SKILLS_REPO/scripts/install.sh" >&2
+else
+  echo "Note: skills installer missing at $SKILLS_REPO/scripts/install.sh" >&2
+fi
+
 echo "Done."
