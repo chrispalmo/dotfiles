@@ -329,39 +329,83 @@ function gcm() {
 
     # Check if sgpt is installed
     if ! command -v sgpt &>/dev/null; then
-        echo "sgpt is not installed. Opening the standard editor for the commit message."
+        echo -e "\033[1;31msgpt is not installed. Opening the standard editor for the commit message.\033[0m"
         git commit
         return
     fi
 
-    # Combine unstaged and staged diffs
-    local diff_output
+    local files_changed diff_output prompt_body
+    local context_budget=12000 diff_truncated=0
+    local diff_header=$'git_diff:\n' marker=$'\n[git_diff truncated]'
+    local remaining diff_budget
+
+    files_changed=$(git status --short 2>/dev/null)
     diff_output=$(git diff --staged)
 
-    # If no diff is available, fallback to the standard editor
+    # If no staged diff is available, fallback to the standard editor
     if [[ -z "$diff_output" ]]; then
-        echo "No changes detected. Opening the standard editor for the commit message."
+        echo "No staged changes detected. Opening the standard editor for the commit message."
         git commit
         return
     fi
 
-    # Generate a commit message using sgpt
-    local commit_message
-    commit_message=$(echo "$diff_output" | sgpt "Generate a concise and meaningful one-line commit message \
-        summarizing these changes. \
-        Only state changes made, NEVER assume WHY or HOW they were made. \
-        Reply ONLY with the suggested message - do not enclose it in quotation marks \
-        NEVER respond with more than 80 characters" \
-        2>/dev/null)
+    prompt_body=$'Context (optional - use only if relevant to the request; otherwise ignore entirely):\n'
+    prompt_body+="cwd: $PWD"$'\n'
+    local git_branch
+    git_branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
+    if [[ -n "$git_branch" ]]; then
+        prompt_body+="git_branch: $git_branch"$'\n'
+    fi
+    if [[ -n "$files_changed" ]]; then
+        prompt_body+=$'git_files_changed:\n'"$files_changed"$'\n'
+    fi
+
+    remaining=$(( context_budget - ${#prompt_body} ))
+    if (( remaining > ${#diff_header} + ${#marker} )); then
+        diff_budget=$(( remaining - ${#diff_header} ))
+        if (( ${#diff_output} > diff_budget )); then
+            diff_output="${diff_output:0:$(( diff_budget - ${#marker} ))}$marker"
+            diff_truncated=1
+        fi
+        prompt_body+="$diff_header$diff_output"$'\n'
+    else
+        # Keep the full file list; skip diff rather than trimming files.
+        diff_truncated=1
+    fi
+
+    prompt_body+=$'\nRequest:\nGenerate a concise and meaningful one-line commit message summarizing these changes. Only state changes made, NEVER assume WHY or HOW they were made. Reply ONLY with the suggested message - do not enclose it in quotation marks. NEVER respond with more than 80 characters.'
+
+    local commit_message sgpt_err_file sgpt_err sgpt_status sgpt_err_summary
+    sgpt_err_file=$(mktemp)
+    # gpt-5.6-luna rejects temperature=0 (sgpt default); pass 1.
+    commit_message=$(sgpt --temperature 1 <<<"$prompt_body" 2>"$sgpt_err_file")
+    sgpt_status=$?
+    sgpt_err=$(<"$sgpt_err_file")
+    rm -f "$sgpt_err_file"
+    commit_message=${commit_message%%$'\n'}
 
     # Fallback if sgpt fails or generates an empty response
-    if [[ -z "$commit_message" ]]; then
-        echo "sgpt failed to generate a commit message. Opening the standard editor."
+    if [[ -z "$commit_message" || $sgpt_status -ne 0 ]]; then
+        echo -e "\033[1;31msgpt failed to generate a commit message. Opening the standard editor.\033[0m"
+        sgpt_err_summary=$(print -r -- "$sgpt_err" | rg -m1 "Error code:|BadRequestError:|AuthenticationError:|RateLimitError:|APIConnectionError:|Error:" || true)
+        if [[ -z "$sgpt_err_summary" && -n "$sgpt_err" ]]; then
+            sgpt_err_summary=$(print -r -- "$sgpt_err" | tail -n 8)
+        fi
+        if [[ -n "$sgpt_err_summary" ]]; then
+            echo -e "\033[1;31m$sgpt_err_summary\033[0m"
+        elif [[ $sgpt_status -ne 0 ]]; then
+            echo -e "\033[1;31msgpt exited with status $sgpt_status (no stderr captured).\033[0m"
+        else
+            echo -e "\033[1;31msgpt returned an empty commit message.\033[0m"
+        fi
         git commit
         return
     fi
 
     # Display the suggested commit message with formatting
+    if (( diff_truncated )); then
+        echo -e "\n\033[1;31mWarning: git diff was truncated; proposed commit message is based on incomplete information.\033[0m"
+    fi
     echo -e "\n\033[1;34mSuggested commit message:\033[0m"
     echo -e "\033[1;32m$commit_message\033[0m\n"
     echo -n "Press Enter to accept, or type an alternative commit message: "
@@ -479,10 +523,23 @@ fi
 # Shell-GPT integration ZSH v0.2
 _sgpt_zsh() {
 if [[ -n "$BUFFER" ]]; then
-    _sgpt_prev_cmd=$BUFFER
+    local _sgpt_prev_cmd=$BUFFER
+    local _sgpt_context _sgpt_git_branch
+
+    _sgpt_context=$'Context (optional - use only if relevant to the request; otherwise ignore entirely):\n'
+    _sgpt_context+="cwd: $PWD"$'\n'
+
+    if git rev-parse --is-inside-work-tree &>/dev/null; then
+        _sgpt_git_branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
+        if [[ -n "$_sgpt_git_branch" ]]; then
+            _sgpt_context+="git_branch: $_sgpt_git_branch"$'\n'
+        fi
+    fi
+
     BUFFER+="⌛"
     zle -I && zle redisplay
-    BUFFER=$(sgpt --shell <<< "$_sgpt_prev_cmd" --no-interaction)
+    # gpt-5.6-luna rejects temperature=0 (sgpt default); pass 1.
+    BUFFER=$(sgpt --shell --temperature 1 --no-interaction <<< "$_sgpt_context"$'\nRequest:\n'"$_sgpt_prev_cmd")
     zle end-of-line
 fi
 }
