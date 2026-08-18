@@ -36,3 +36,4 @@ if [[ -n "$AI_AGENT_SHELL" ]]; then
     export EDITOR=:
     export GIT_EDITOR=true
 fi
+. "$HOME/.cargo/env"
