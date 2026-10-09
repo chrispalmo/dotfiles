@@ -9,11 +9,11 @@ Editor settings and keybindings for Cursor on macOS. These files are the source 
 | `settings.json` | `~/Library/Application Support/Cursor/User/settings.json` |
 | `keybindings.json` | `~/Library/Application Support/Cursor/User/keybindings.json` |
 
-Run `~/.files/install.sh` on a new machine (after cloning to `~/.files`). Existing real files are moved to `*.backup` before the symlink is created.
+Run `~/dev/dotfiles/install.sh` on a new machine (after cloning to `~/dev/dotfiles`). Existing real files are moved to `*.backup` before the symlink is created.
 
 ## Day to day
 
-Edit here (or in Cursor—the symlink means both paths are the same file). Commit and push `~/.files` when you want changes backed up.
+Edit here (or in Cursor—the symlink means both paths are the same file). Commit and push `~/dev/dotfiles` when you want changes backed up.
 
 ## Not the same as VS Code
 

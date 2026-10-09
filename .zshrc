@@ -180,8 +180,8 @@ alias soa='open https://stackoverflow.com/questions/ask'
 alias so=stackoverflow
 
 # Nav
-alias .f="cd ~/.files/"
-alias df="cd ~/.files/"
+alias .f='cd "$DEV_ROOT/dotfiles"'
+alias df='cd "$DEV_ROOT/dotfiles"'
 alias db="cd ~/Dropbox/"
 alias dt="cd ~/Desktop/"
 alias gdrive='cd "$HOME/Google Drive/My Drive"'
@@ -548,4 +548,4 @@ bindkey '^o' _sgpt_zsh
 # </Shell-GPT integration ZSH v0.2>
 
 # Import ad-hoc aliases
-source ~/.files/.scratch
+source "$DEV_ROOT/dotfiles/.scratch"

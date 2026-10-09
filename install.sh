@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-DOTFILES="$HOME/.files"
+DOTFILES="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
 
 [ -d "$DOTFILES" ] || {
   echo "Expected dotfiles at $DOTFILES" >&2

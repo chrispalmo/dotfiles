@@ -30,7 +30,7 @@ export PATH="$N_PREFIX/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
 
 # Must stay quiet: no echo, no prompt.
-[ -f ~/.files/.keys ] && source ~/.files/.keys
+[ -f "$DEV_ROOT/dotfiles/.keys" ] && source "$DEV_ROOT/dotfiles/.keys"
 
 if [[ -n "$AI_AGENT_SHELL" ]]; then
     export EDITOR=:

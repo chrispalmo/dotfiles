@@ -1,4 +1,4 @@
-# .files
+# dotfiles
 
 Personal macOS dotfiles. Work through the sections below in order on a fresh Mac.
 
@@ -18,13 +18,14 @@ open "https://github.com/settings/keys"
 ## clone this repo
 
 ```
-git clone git@github.com:chrispalmo/.files.git ~/.files
+mkdir -p ~/dev
+git clone git@github.com:chrispalmo/dotfiles.git ~/dev/dotfiles
 ```
 
 ## install deps
 
 ```
-~/.files/install-deps.sh
+~/dev/dotfiles/install-deps.sh
 ```
 
 Then open a new terminal (pick up brew / pipx / n paths).
@@ -62,7 +63,7 @@ open "https://transmissionbt.com/download.html"
 _⚠️ if Moom is installed, quit it before running. Import is skipped when Moom is not installed._
 
 ```
-~/.files/install.sh
+~/dev/dotfiles/install.sh
 ```
 
 `install.sh` is idempotent. Symlinks dotfiles, imports Moom (when installed), bootstraps vim plugins, creates `.keys`/`.scratch`, sets screenshot folder, and clones [agent-config](https://github.com/chrispalmo/agent-config) into `~/dev/agent-config` then runs its installer for Cursor, Claude Code, and Codex.

@@ -46,4 +46,4 @@ fi
 
 "$(brew --prefix)/opt/fzf/install" --key-bindings --completion --no-update-rc
 
-echo "Done. Open a new terminal, then run ~/.files/install.sh"
+echo "Done. Open a new terminal, then run ~/dev/dotfiles/install.sh"
